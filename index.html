@@ -1,1286 +1,969 @@
 <!DOCTYPE html>
 <html lang="hu">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EgérMester - Gyerek Egérkezelő Játék</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Fredoka -->
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <style>
-        body {
-            font-family: 'Fredoka', sans-serif;
-            user-select: none;
-            -webkit-user-select: none;
-            touch-action: manipulation;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EgérMester - Gyerekjáték</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --card-bg: #16213e;
+      --accent: #e94560;
+      --accent-yellow: #f9d342;
+      --green: #00e676;
+      --blue: #00d2ff;
+      --purple: #9d4edd;
+      --text: #ffffff;
+    }
 
-        .pulse-slow {
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
 
-        .bounce-gentle {
-            animation: bounceGentle 1.5s infinite ease-in-out;
-        }
+    body {
+      background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px;
+      overflow-x: hidden;
+    }
 
-        @keyframes bounceGentle {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
-        }
+    header {
+      text-align: center;
+      margin-bottom: 5px;
+    }
 
-        .float-bubble {
-            animation: floatAnim 3s infinite ease-in-out;
-        }
+    h1 {
+      font-size: 2.2rem;
+      color: var(--accent-yellow);
+      text-shadow: 0 4px 12px rgba(249, 211, 66, 0.4);
+      margin-bottom: 2px;
+    }
 
-        @keyframes floatAnim {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-12px) rotate(3deg); }
-        }
+    p.subtitle {
+      color: #b0b0d0;
+      font-size: 0.95rem;
+    }
 
-        .glow-effect {
-            box-shadow: 0 0 20px rgba(129, 140, 248, 0.5);
-        }
+    /* Vezérlő gombok */
+    .controls-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      margin: 8px 0;
+      width: 100%;
+      max-width: 850px;
+    }
 
-        .glow-target {
-            box-shadow: 0 0 25px rgba(52, 211, 153, 0.8);
-        }
+    .button-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
 
-        /* Custom scrollbar styling for scroll task */
-        .custom-scroll-box::-webkit-scrollbar {
-            width: 12px;
-        }
-        .custom-scroll-box::-webkit-scrollbar-track {
-            background: #1e293b;
-            border-radius: 10px;
-        }
-        .custom-scroll-box::-webkit-scrollbar-thumb {
-            background: #6366f1;
-            border-radius: 10px;
-            border: 2px solid #1e293b;
-        }
-    </style>
+    .btn {
+      background: var(--card-bg);
+      border: 2px solid #30475e;
+      color: white;
+      padding: 8px 14px;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      border-color: var(--blue);
+      transform: translateY(-2px);
+    }
+
+    .btn.active {
+      background: var(--blue);
+      color: #000;
+      border-color: var(--blue);
+      box-shadow: 0 0 12px rgba(0, 210, 255, 0.5);
+    }
+
+    .btn.mode-btn.active {
+      background: var(--accent-yellow);
+      color: #000;
+      border-color: var(--accent-yellow);
+      box-shadow: 0 0 12px rgba(249, 211, 66, 0.5);
+    }
+
+    .btn.reset-btn {
+      background: #ff3366;
+      border-color: #ff3366;
+    }
+
+    .btn.reset-btn:hover {
+      background: #ff0044;
+    }
+
+    .btn.leaderboard-btn {
+      background: var(--purple);
+      border-color: var(--purple);
+    }
+
+    .btn.sound-btn {
+      background: #30475e;
+    }
+
+    /* Statisztikai sáv */
+    .stats-bar {
+      display: flex;
+      gap: 18px;
+      background: rgba(22, 33, 62, 0.8);
+      padding: 8px 22px;
+      border-radius: 50px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 65px;
+    }
+
+    .stat-label {
+      font-size: 0.7rem;
+      color: #8a8aa8;
+      text-transform: uppercase;
+    }
+
+    .stat-value {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: var(--accent-yellow);
+    }
+
+    /* Játéktér kártya */
+    .game-card {
+      background: rgba(22, 33, 62, 0.9);
+      border: 3px solid #30475e;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 750px;
+      height: 380px;
+      position: relative;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+      margin-bottom: 10px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .task-title {
+      position: absolute;
+      top: 12px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: var(--accent-yellow);
+      background: rgba(0,0,0,0.4);
+      padding: 6px 18px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,204,0,0.3);
+      z-index: 10;
+      text-align: center;
+    }
+
+    /* --- FELADAT SPECIÁLIS ELEMEK --- */
+
+    /* 1. Buborékok (Bal klikk) */
+    .bubble {
+      width: 70px;
+      height: 70px;
+      background: radial-gradient(circle at 30% 30%, rgba(0,210,255,0.9), rgba(0,120,255,0.6));
+      border-radius: 50%;
+      position: absolute;
+      cursor: pointer;
+      box-shadow: 0 0 15px rgba(0,210,255,0.6), inset 0 0 10px rgba(255,255,255,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      animation: float 2s infinite ease-in-out alternate;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      100% { transform: translateY(-10px); }
+    }
+
+    /* 2. Varázsdoboz (Jobb klikk) */
+    .magic-box {
+      width: 110px;
+      height: 110px;
+      background: linear-gradient(135deg, #ff007f, #7928ca);
+      border-radius: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3.5rem;
+      box-shadow: 0 0 25px rgba(255,0,127,0.5);
+      border: 3px solid #ff66cc;
+      transition: transform 0.2s ease;
+    }
+
+    .magic-box:hover {
+      transform: scale(1.05);
+    }
+
+    /* 3. Tojás (Dupla klikk) */
+    .egg {
+      font-size: 5rem;
+      cursor: pointer;
+      transition: transform 0.1s ease;
+      filter: drop-shadow(0 0 15px rgba(255,255,255,0.4));
+    }
+
+    .egg:active {
+      transform: scale(0.92);
+    }
+
+    /* 4. Drag and Drop */
+    .drag-container {
+      display: flex;
+      justify-content: space-around;
+      width: 90%;
+      align-items: center;
+    }
+
+    .draggable-item {
+      width: 75px;
+      height: 75px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      cursor: grab;
+      box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+    }
+
+    .drop-bin {
+      width: 95px;
+      height: 95px;
+      border: 3px dashed #666;
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      color: #aaa;
+      gap: 5px;
+    }
+
+    .drop-bin.highlight {
+      border-color: var(--green);
+      background: rgba(0,230,118,0.1);
+    }
+
+    /* 5. Pontok összekötése (Canvas) */
+    #connectCanvas {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 2;
+    }
+
+    .dot-node {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      z-index: 3;
+      box-shadow: 0 0 15px rgba(255,255,255,0.5);
+    }
+
+    /* 6. Görgetés (Scroll) */
+    .scroll-zone {
+      width: 260px;
+      height: 200px;
+      background: #111b2e;
+      border: 3px solid var(--blue);
+      border-radius: 16px;
+      overflow-y: scroll;
+      padding: 15px;
+      text-align: center;
+      box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
+    }
+
+    .scroll-content {
+      height: 600px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* 7. Csúszka (Slider) */
+    .slider-container {
+      width: 80%;
+      max-width: 450px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .custom-slider {
+      width: 100%;
+      height: 22px;
+      border-radius: 11px;
+      background: #0f172a;
+      outline: none;
+      border: 2px solid #334155;
+    }
+
+    .slider-target-bar {
+      width: 100%;
+      height: 30px;
+      background: #1e293b;
+      border-radius: 8px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid #475569;
+    }
+
+    .slider-target-zone {
+      position: absolute;
+      height: 100%;
+      background: rgba(0, 230, 118, 0.4);
+      border-left: 2px solid var(--green);
+      border-right: 2px solid var(--green);
+    }
+
+    /* 8. Összetett helyi menü */
+    .context-area {
+      width: 85%;
+      height: 220px;
+      border: 3px dashed var(--purple);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      color: #c084fc;
+      background: rgba(157, 78, 221, 0.05);
+    }
+
+    .custom-menu {
+      position: absolute;
+      background: #252836;
+      border: 2px solid #44485f;
+      border-radius: 10px;
+      padding: 6px 0;
+      width: 160px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+      z-index: 50;
+      display: none;
+    }
+
+    .menu-item {
+      padding: 8px 15px;
+      font-size: 0.9rem;
+      color: #e2e8f0;
+      cursor: pointer;
+      position: relative;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .menu-item:hover {
+      background: var(--blue);
+      color: #000;
+      font-weight: bold;
+    }
+
+    .submenu {
+      position: absolute;
+      left: 100%;
+      top: 0;
+      background: #252836;
+      border: 2px solid #44485f;
+      border-radius: 10px;
+      padding: 6px 0;
+      width: 140px;
+      display: none;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+    }
+
+    .menu-item.has-submenu:hover .submenu {
+      display: block;
+    }
+
+    /* Modal / Felugró ablakok */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: var(--card-bg);
+      border: 3px solid var(--accent-yellow);
+      border-radius: 20px;
+      padding: 25px;
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .modal-card h2 {
+      font-size: 1.8rem;
+      color: var(--accent-yellow);
+      margin-bottom: 10px;
+    }
+
+    .modal-card p {
+      margin-bottom: 15px;
+      color: #d0d0e0;
+    }
+
+    .modal-input {
+      width: 100%;
+      padding: 10px 15px;
+      border-radius: 10px;
+      border: 2px solid #555577;
+      background: #181824;
+      color: white;
+      font-size: 1rem;
+      text-align: center;
+      margin-bottom: 15px;
+      outline: none;
+    }
+
+    .leaderboard-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+      font-size: 0.9rem;
+    }
+
+    .leaderboard-table th, .leaderboard-table td {
+      padding: 8px;
+      text-align: center;
+      border-bottom: 1px solid #30475e;
+    }
+
+    .leaderboard-table th {
+      color: var(--blue);
+    }
+
+    footer {
+      font-size: 0.8rem;
+      color: #666688;
+      margin-top: 5px;
+    }
+  </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between overflow-x-hidden selection:bg-pink-500">
+<body oncontextmenu="return false;">
 
-    <!-- Konfetti Canvas -->
-    <canvas id="confetti-canvas" class="fixed inset-0 pointer-events-none z-50 w-full h-full"></canvas>
+  <header>
+    <h1>🖱️ EgérMester Gyerekjáték</h1>
+    <p class="subtitle">Gyakorold az egér használatát játékosan!</p>
+  </header>
 
-    <!-- Toast Értesítés (Alerts helyett) -->
-    <div id="toast" class="fixed top-20 right-5 z-50 bg-indigo-600 text-white font-bold px-5 py-3 rounded-2xl shadow-2xl transition-all duration-300 opacity-0 transform translate-y-[-20px] pointer-events-none border-2 border-indigo-300 flex items-center space-x-2">
-        <span id="toast-icon">ℹ️</span>
-        <span id="toast-message">Értesítés</span>
+  <!-- Vezérlők -->
+  <div class="controls-container">
+    <div class="button-group">
+      <button class="btn mode-btn active" onclick="setGameMode('challenge')">🏆 10-es Kihívás Mód</button>
+      <button class="btn mode-btn" onclick="setGameMode('practice')">🏋️ Szabad Gyakorlás</button>
     </div>
 
-    <header class="bg-slate-900/90 backdrop-blur-md border-b-2 border-slate-800 sticky top-0 z-30 shadow-lg">
-        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
-            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchMode('menu')">
-                <div class="bg-gradient-to-tr from-pink-500 via-purple-500 to-indigo-500 p-2.5 rounded-2xl shadow-lg text-white text-2xl animate-pulse">
-                    🖱️
-                </div>
-                <div>
-                    <h1 class="text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-pink-400 via-purple-300 to-indigo-400 bg-clip-text text-transparent leading-none">
-                        EgérMester
-                    </h1>
-                    <p class="text-xs font-semibold text-slate-400 mt-0.5">Egérkezelő Játék Gyerekeknek</p>
-                </div>
-            </div>
+    <!-- Gyakorló feladat választó -->
+    <div class="button-group" id="taskSelectorGroup" style="display:none;">
+      <button class="btn task-btn active" onclick="selectPracticeTask(1)">1. Bal klikk</button>
+      <button class="btn task-btn" onclick="selectPracticeTask(2)">2. Jobb klikk</button>
+      <button class="btn task-btn" onclick="selectPracticeTask(3)">3. Dupla klikk</button>
+      <button class="btn task-btn" onclick="selectPracticeTask(4)">4. Drag & Drop</button>
+      <button class="btn task-btn" onclick="selectPracticeTask(5)">5. Összekötés</button>
+      <button class="btn task-btn" onclick="selectPracticeTask(6)">6. Görgetés</button>
+      <button class="btn task-btn" onclick="selectPracticeTask(7)">7. Csúszka</button>
+      <button class="btn task-btn" onclick="selectPracticeTask(8)">8. Mappa menü</button>
+    </div>
 
-            <!-- Felső vezérlő gombok -->
-            <div class="flex items-center space-x-2 sm:space-x-3">
-                <button id="sound-btn" onclick="toggleSound()" class="flex items-center space-x-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all border border-slate-700 shadow-sm">
-                    <span id="sound-icon">🔇</span>
-                    <span id="sound-text">Hang: KI</span>
-                </button>
-                <button onclick="openLeaderboard()" class="flex items-center space-x-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all border border-amber-500/40">
-                    <span>🏆</span>
-                    <span class="hidden sm:inline">Ranglista</span>
-                </button>
-                <button onclick="shareLink()" class="flex items-center space-x-1.5 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all border border-purple-500/40">
-                    <span>🔗</span>
-                    <span class="hidden sm:inline">Megosztás</span>
-                </button>
-            </div>
-        </div>
-    </header>
+    <div class="button-group">
+      <button class="btn sound-btn" id="soundBtn" onclick="toggleSound()">🔇 Hang: KI</button>
+      <button class="btn leaderboard-btn" onclick="openLeaderboardModal()">🏆 Ranglista</button>
+      <button class="btn reset-btn" onclick="resetGame()">🔄 Újraindítás</button>
+    </div>
+  </div>
 
-    <main class="max-w-5xl w-full mx-auto p-4 flex-grow flex flex-col justify-center">
+  <!-- Statisztika bar -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <span class="stat-label">Idő</span>
+      <span class="stat-value" id="timer">00:00</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Feladat</span>
+      <span class="stat-value" id="taskCounter">1 / 10</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Pontszám</span>
+      <span class="stat-value" id="score">0</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Sorozat</span>
+      <span class="stat-value" id="streak">0 🔥</span>
+    </div>
+  </div>
 
-        <!-- ========================================== -->
-        <!-- FŐMENÜ KÉPERNYŐ                            -->
-        <!-- ========================================== -->
-        <div id="screen-menu" class="space-y-8 my-auto py-6">
-            <div class="text-center space-y-2">
-                <h2 class="text-3xl sm:text-4xl font-extrabold text-white">
-                    Szia! Mivel szeretnél játszani? 🎮
-                </h2>
-                <p class="text-slate-400 text-sm sm:text-base max-w-lg mx-auto">
-                    Gyakorold az egér használatát szórakoztató feladatokkal, vagy válaszd a stopperezett Kihívás módot!
-                </p>
-            </div>
+  <!-- Fő Játéktér Kártya -->
+  <div class="game-card" id="gameCard">
+    <div class="task-title" id="taskTitle">Feladat Betöltése...</div>
+    <div id="taskContent" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; position: relative;">
+      <!-- Dinamikusan generált feladat tartalom -->
+    </div>
+  </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-                <!-- Kihívás Mód Kártya -->
-                <div class="bg-gradient-to-br from-amber-500 via-orange-600 to-pink-600 rounded-3xl p-6 text-white shadow-2xl hover:scale-[1.01] transition-all duration-300 flex flex-col justify-between relative overflow-hidden group border-2 border-amber-400/30">
-                    <div class="absolute -right-6 -bottom-6 text-9xl opacity-15 group-hover:scale-110 transition-transform">⚡</div>
-                    <div>
-                        <div class="inline-block bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-3 border border-white/30">
-                            🏆 Fő Játékmód
-                        </div>
-                        <h3 class="text-2xl font-black mb-2 flex items-center gap-2">
-                            <span>⚡ Kihívás Mód</span>
-                        </h3>
-                        <p class="text-white/90 text-sm leading-relaxed mb-4">
-                            10 véletlenszerű egérfeladat egymás után! Stopperóra méri az idődet. Próbáld meg megdönteni a rekordodat!
-                        </p>
-                    </div>
+  <!-- Egyedi Jobb-Klikk Helyi Menü (8. Feladathoz) -->
+  <div class="custom-menu" id="customContextMenu">
+    <div class="menu-item">Megnyitás</div>
+    <div class="menu-item">Másolás</div>
+    <div class="menu-item has-submenu">
+      Új... ▶
+      <div class="submenu">
+        <div class="menu-item" onclick="onFolderMenuClick()">📁 Mappa</div>
+        <div class="menu-item">📄 Dokumentum</div>
+      </div>
+    </div>
+    <div class="menu-item">Törlés</div>
+  </div>
 
-                    <div class="space-y-4 pt-4 border-t border-white/20">
-                        <div class="flex justify-between items-center text-xs font-semibold bg-black/20 px-3.5 py-2 rounded-xl backdrop-blur-sm">
-                            <span>Legjobb rekordod:</span>
-                            <span id="menu-best-time" class="text-yellow-300 font-extrabold text-sm">--:--.-</span>
-                        </div>
-                        <button onclick="startChallengeMode()" class="w-full bg-white text-orange-600 hover:bg-yellow-100 font-extrabold py-3.5 px-6 rounded-2xl text-lg shadow-lg transition-all flex items-center justify-center space-x-2">
-                            <span>▶️ Kihívás Indítása!</span>
-                        </button>
-                    </div>
-                </div>
+  <!-- Eredmény Mentése Modal -->
+  <div class="modal-overlay" id="finishModal">
+    <div class="modal-card">
+      <h2>🎉 Gratulálunk!</h2>
+      <p id="finishSummary">Sikeresen teljesítetted a kihívást!</p>
+      <input type="text" id="playerNameInput" class="modal-input" placeholder="Írd be a neved..." maxlength="15">
+      <button class="btn mode-btn" style="width:100%" onclick="saveScoreAndClose()">Mentés a Ranglistára</button>
+    </div>
+  </div>
 
-                <!-- Gyakorló Mód Kártya -->
-                <div class="bg-slate-900 rounded-3xl p-6 border-2 border-slate-800 shadow-xl flex flex-col justify-between">
-                    <div>
-                        <div class="inline-block bg-indigo-500/20 text-indigo-300 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-3 border border-indigo-500/30">
-                            📚 Gyakorlás
-                        </div>
-                        <h3 class="text-2xl font-bold text-white mb-2">
-                            🎯 Gyakorló Mód
-                        </h3>
-                        <p class="text-slate-400 text-sm leading-relaxed mb-4">
-                            Válaszd ki az egyik konkrét feladattípust és gyakorold önállóan, időkorlát nélkül!
-                        </p>
-                    </div>
+  <!-- Ranglista Modal -->
+  <div class="modal-overlay" id="leaderboardModal">
+    <div class="modal-card">
+      <h2>🏆 Ranglista (Top 10)</h2>
+      <div id="leaderboardContent"></div>
+      <button class="btn reset-btn" style="width:100%; margin-top:15px;" onclick="closeLeaderboardModal()">Bezárás</button>
+    </div>
+  </div>
 
-                    <!-- 7 Gyakorló Szint Gombjai -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-xs">
-                        <button onclick="startPracticeMode(1)" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-blue-300 border border-blue-500/30 rounded-xl text-left transition-all flex items-center space-x-2">
-                            <span class="text-lg">🎈</span>
-                            <div>
-                                <div class="font-bold">1. Bal Klikk</div>
-                                <div class="text-[10px] text-slate-400">Buborék pukkasztás</div>
-                            </div>
-                        </button>
+  <footer>Informatika órára és otthoni gyakorláshoz</footer>
 
-                        <button onclick="startPracticeMode(2)" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-purple-300 border border-purple-500/30 rounded-xl text-left transition-all flex items-center space-x-2">
-                            <span class="text-lg">🎁</span>
-                            <div>
-                                <div class="font-bold">2. Jobb Klikk</div>
-                                <div class="text-[10px] text-slate-400">Ajándék kinyitás</div>
-                            </div>
-                        </button>
+  <script>
+    // --- AUDIO GENERÁTOR (Web Audio API) ---
+    let soundEnabled = false; // ALAPESETBEN KIKAPCSOLVA
+    let audioCtx = null;
 
-                        <button onclick="startPracticeMode(3)" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-emerald-500/30 rounded-xl text-left transition-all flex items-center space-x-2">
-                            <span class="text-lg">🖐️</span>
-                            <div>
-                                <div class="font-bold">3. Húzás & Ejtés</div>
-                                <div class="text-[10px] text-slate-400">Drag & Drop formák</div>
-                            </div>
-                        </button>
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const btn = document.getElementById('soundBtn');
+      btn.innerText = soundEnabled ? '🔊 Hang: BE' : '🔇 Hang: KI';
+      btn.style.background = soundEnabled ? '#00e676' : '#30475e';
+      btn.style.color = soundEnabled ? '#000' : '#fff';
+    }
 
-                        <button onclick="startPracticeMode(4)" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 rounded-xl text-left transition-all flex items-center space-x-2">
-                            <span class="text-lg">📁</span>
-                            <div>
-                                <div class="font-bold">4. Menü Navigáció</div>
-                                <div class="text-[10px] text-slate-400">Új -> Mappa</div>
-                            </div>
-                        </button>
+    function playSound(type) {
+      if (!soundEnabled) return;
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
 
-                        <button onclick="startPracticeMode(5)" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-pink-300 border border-pink-500/30 rounded-xl text-left transition-all flex items-center space-x-2">
-                            <span class="text-lg">🚀</span>
-                            <div>
-                                <div class="font-bold">5. Pontok Összekötése</div>
-                                <div class="text-[10px] text-slate-400">Vonal húzás A-ból B-be</div>
-                            </div>
-                        </button>
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
 
-                        <button onclick="startPracticeMode(6)" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/30 rounded-xl text-left transition-all flex items-center space-x-2">
-                            <span class="text-lg">📜</span>
-                            <div>
-                                <div class="font-bold">6. Egérgörgőzés</div>
-                                <div class="text-[10px] text-slate-400">Gördítés a kincsig</div>
-                            </div>
-                        </button>
+      if (type === 'pop') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+      } else if (type === 'win') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+        osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+        osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); // G5
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.35);
+      }
+    }
 
-                        <button onclick="startPracticeMode(7)" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-yellow-300 border border-yellow-500/30 rounded-xl text-left transition-all flex items-center space-x-2 col-span-1 sm:col-span-2">
-                            <span class="text-lg">🎚️</span>
-                            <div>
-                                <div class="font-bold">7. Csúszka Húzása</div>
-                                <div class="text-[10px] text-slate-400">Gördítősáv igazítása a célzónába</div>
-                            </div>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+    // --- JÁTÉK ÁLLAPOTOK ---
+    let gameMode = 'challenge'; // 'challenge' vagy 'practice'
+    let currentTaskType = 1;
+    let challengeStep = 1;
+    const totalChallengeSteps = 10;
+    let score = 0;
+    let streak = 0;
+    let gameActive = true;
 
-        <!-- ========================================== -->
-        <!-- JÁTÉKTÉR KÉPERNYŐ                          -->
-        <!-- ========================================== -->
-        <div id="screen-game" class="hidden space-y-4">
-            
-            <!-- Felső Status Bar -->
-            <div class="bg-slate-900 rounded-2xl p-3.5 shadow-md border border-slate-800 flex flex-wrap justify-between items-center gap-3">
-                
-                <div class="flex items-center space-x-3">
-                    <button onclick="switchMode('menu')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border border-slate-700 flex items-center space-x-1">
-                        <span>⬅️</span>
-                        <span>Főmenü</span>
-                    </button>
-                    <div>
-                        <span id="game-mode-badge" class="bg-purple-500/20 text-purple-300 border border-purple-500/30 text-xs font-bold px-2.5 py-0.5 rounded-md">
-                            Kihívás Mód
-                        </span>
-                        <div id="task-counter" class="text-xs font-semibold text-slate-400 mt-0.5">
-                            Feladat: 1 / 10
-                        </div>
-                    </div>
-                </div>
+    // Időzítő
+    let timerInterval = null;
+    let secondsElapsed = 0;
+    let timerStarted = false;
 
-                <!-- Stopperóra Display -->
-                <div id="timer-container" class="flex items-center space-x-2 bg-slate-950 text-emerald-400 px-4 py-1.5 rounded-xl font-mono text-xl sm:text-2xl font-extrabold shadow-inner border border-slate-800">
-                    <span class="text-xs text-slate-500 font-sans font-bold">⏱️</span>
-                    <span id="timer-display">00:00.0</span>
-                </div>
-            </div>
+    // DOM elemek
+    const taskTitle = document.getElementById('taskTitle');
+    const taskContent = document.getElementById('taskContent');
+    const timerEl = document.getElementById('timer');
+    const taskCounterEl = document.getElementById('taskCounter');
+    const scoreEl = document.getElementById('score');
+    const streakEl = document.getElementById('streak');
+    const customContextMenu = document.getElementById('customContextMenu');
 
-            <!-- Utasítás Fejléc -->
-            <div class="bg-gradient-to-r from-indigo-900 via-purple-900 to-slate-900 border border-indigo-500/30 text-white rounded-2xl p-4 shadow-lg flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    <div id="instruction-icon" class="text-3xl bg-white/10 p-2 rounded-xl backdrop-blur-sm border border-white/10">🎈</div>
-                    <div>
-                        <h3 id="instruction-text" class="text-base sm:text-lg font-bold text-white">
-                            Durrantsd ki a buborékot a BAL egérgombbal!
-                        </h3>
-                        <p id="instruction-subtext" class="text-xs text-indigo-200 font-medium">
-                            Kattints egyszer a színes lufira!
-                        </p>
-                    </div>
-                </div>
-                <button onclick="restartCurrentTask()" class="text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 p-2 rounded-xl text-xs font-semibold transition-all">
-                    🔄 Újra
-                </button>
-            </div>
+    function setGameMode(mode) {
+      gameMode = mode;
+      document.querySelectorAll('.mode-btn').forEach(b => {
+        b.classList.toggle('active', b.getAttribute('onclick').includes(mode));
+      });
+      document.getElementById('taskSelectorGroup').style.display = mode === 'practice' ? 'flex' : 'none';
+      resetGame();
+    }
 
-            <!-- FŐ INTERAKTÍV JÁTÉK ARÉNA -->
-            <div id="game-area" class="relative bg-slate-900/80 rounded-3xl border-4 border-dashed border-slate-800 min-h-[380px] sm:min-h-[440px] flex items-center justify-center p-4 sm:p-6 overflow-hidden shadow-inner cursor-crosshair">
-                
-                <!-- Dinamikus feladat tartalom ide fecskendezve JS-ből -->
-                <div id="arena-content" class="w-full h-full flex items-center justify-center relative min-h-[350px]"></div>
+    function selectPracticeTask(type) {
+      currentTaskType = type;
+      document.querySelectorAll('.task-btn').forEach((b, idx) => {
+        b.classList.toggle('active', idx + 1 === type);
+      });
+      loadTask(currentTaskType);
+    }
 
-            </div>
+    function resetGame() {
+      stopTimer();
+      score = 0;
+      streak = 0;
+      challengeStep = 1;
+      gameActive = true;
+      scoreEl.innerText = '0';
+      streakEl.innerText = '0 🔥';
+      timerEl.innerText = '00:00';
 
-        </div>
+      if (gameMode === 'challenge') {
+        taskCounterEl.innerText = `1 / ${totalChallengeSteps}`;
+        loadRandomTask();
+      } else {
+        taskCounterEl.innerText = '∞';
+        loadTask(currentTaskType);
+      }
+    }
 
-        <!-- ========================================== -->
-        <!-- GYŐZELMI MODAL                             -->
-        <!-- ========================================== -->
-        <div id="modal-victory" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-40 hidden flex items-center justify-center p-4">
-            <div class="bg-slate-900 rounded-3xl max-w-md w-full p-6 text-center space-y-5 shadow-2xl border-4 border-amber-400/50 bounce-gentle">
-                <div class="text-6xl">🏆</div>
-                <div class="space-y-1">
-                    <h2 class="text-3xl font-extrabold text-white">Szép volt! Elkészültél!</h2>
-                    <p class="text-slate-400 text-sm">Ügyesen teljesítetted az összes egérkezelési feladatot!</p>
-                </div>
+    function startTimer() {
+      if (timerStarted || !gameActive) return;
+      timerStarted = true;
+      timerInterval = setInterval(() => {
+        secondsElapsed++;
+        const mins = Math.floor(secondsElapsed / 60).toString().padStart(2, '0');
+        const secs = (secondsElapsed % 60).toString().padStart(2, '0');
+        timerEl.innerText = `${mins}:${secs}`;
+      }, 1000);
+    }
 
-                <!-- Csillagok -->
-                <div class="flex justify-center space-x-2 text-4xl">
-                    <span class="text-yellow-400">⭐</span>
-                    <span class="text-yellow-400">⭐</span>
-                    <span class="text-yellow-400">⭐</span>
-                </div>
+    function stopTimer() {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      timerStarted = false;
+      secondsElapsed = 0;
+    }
 
-                <!-- Idő Összegző -->
-                <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-1">
-                    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Elért Időd</div>
-                    <div id="victory-time" class="text-3xl font-mono font-black text-indigo-400">00:14.2</div>
-                    <div id="new-record-badge" class="hidden text-xs font-bold text-emerald-400 bg-emerald-950 border border-emerald-800 inline-block px-3 py-0.5 rounded-full mt-1">
-                        🎉 Új Egyéni Rekord!
-                    </div>
-                </div>
+    function loadRandomTask() {
+      const randomType = Math.floor(Math.random() * 8) + 1;
+      currentTaskType = randomType;
+      loadTask(randomType);
+    }
 
-                <!-- Név Bevitele Ranglistához -->
-                <div class="space-y-2">
-                    <label class="text-xs font-bold text-slate-400 block text-left">Írd be a neved a ranglistához:</label>
-                    <input type="text" id="player-name-input" placeholder="Kis Mester" maxlength="15" class="w-full bg-slate-950 border border-slate-700 text-white font-bold rounded-xl px-4 py-2 text-center focus:border-indigo-500 outline-none">
-                </div>
+    function completeTask() {
+      playSound('pop');
+      score += 10 + (streak * 2);
+      streak++;
+      scoreEl.innerText = score;
+      streakEl.innerText = `${streak} 🔥`;
 
-                <div class="flex space-x-3 pt-2">
-                    <button onclick="saveAndRestartChallenge()" class="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold py-3 px-4 rounded-xl shadow-md transition-all">
-                        💾 Mentés & Újra
-                    </button>
-                    <button onclick="saveAndGoMenu()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-3 px-4 rounded-xl border border-slate-700 transition-all">
-                        🏠 Főmenü
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- ========================================== -->
-        <!-- RANGLISTA MODAL                            -->
-        <!-- ========================================== -->
-        <div id="modal-leaderboard" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-40 hidden flex items-center justify-center p-4">
-            <div class="bg-slate-900 rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border-2 border-amber-500/30">
-                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                    <h3 class="text-xl font-bold text-white flex items-center space-x-2">
-                        <span>🏆</span>
-                        <span>Legjobb Rekordok</span>
-                    </h3>
-                    <button onclick="closeLeaderboard()" class="text-slate-400 hover:text-white text-lg font-bold">✖</button>
-                </div>
-
-                <div id="leaderboard-list" class="space-y-2 max-h-60 overflow-y-auto pr-1">
-                    <!-- Dinamikusan feltöltve JS-ből -->
-                </div>
-
-                <button onclick="closeLeaderboard()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-2.5 rounded-xl border border-slate-700">
-                    Bezárás
-                </button>
-            </div>
-        </div>
-
-    </main>
-
-    <footer class="bg-slate-900 border-t border-slate-800 py-3 text-center text-xs text-slate-500 font-medium">
-        <p>EgérMester • Fejlesztő egérkezelő oktatójáték kisgyerekeknek • Magyar nyelvű felület</p>
-    </footer>
-
-    <script>
-        // --- WEB AUDIO API SYNTHESIZER (ALAPESETBEN KIKAPCSOLVA) ---
-        let audioCtx = null;
-        let soundEnabled = false; // ALAPESETBEN KIKAPCSOLVA A USER KÉRÉSÉRE
-
-        function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
+      if (gameMode === 'challenge') {
+        if (challengeStep >= totalChallengeSteps) {
+          finishChallenge();
+        } else {
+          challengeStep++;
+          taskCounterEl.innerText = `${challengeStep} / ${totalChallengeSteps}`;
+          loadRandomTask();
         }
+      } else {
+        loadTask(currentTaskType);
+      }
+    }
 
-        function toggleSound() {
-            soundEnabled = !soundEnabled;
-            document.getElementById('sound-icon').innerText = soundEnabled ? '🔊' : '🔇';
-            document.getElementById('sound-text').innerText = soundEnabled ? 'Hang: BE' : 'Hang: KI';
-            showToast(soundEnabled ? 'Hang BEKAPCSOLVA 🔊' : 'Hang KIKAPCSOLVA 🔇');
-        }
+    // --- FELADAT GENERÁTOROK ---
+    function loadTask(type) {
+      customContextMenu.style.display = 'none';
+      taskContent.innerHTML = '';
 
-        function playSound(type) {
-            if (!soundEnabled) return;
-            initAudio();
-            if (!audioCtx) return;
+      switch(type) {
+        case 1: // BAL KLIKK (Buborékok)
+          taskTitle.innerText = '🎈 Bal Klikk: Durrantsd el a buborékot!';
+          const bubble = document.createElement('div');
+          bubble.className = 'bubble';
+          bubble.innerText = '🎈';
+          bubble.style.left = `${Math.random() * 70 + 15}%`;
+          bubble.style.top = `${Math.random() * 50 + 25}%`;
+          bubble.onclick = () => completeTask();
+          taskContent.appendChild(bubble);
+          break;
 
-            const now = audioCtx.currentTime;
-
-            if (type === 'pop') {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(400, now);
-                osc.frequency.exponentialRampToValueAtTime(800, now + 0.08);
-                gain.gain.setValueAtTime(0.3, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start(now);
-                osc.stop(now + 0.08);
-            } else if (type === 'magic') {
-                [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(freq, now + idx * 0.05);
-                    gain.gain.setValueAtTime(0.15, now + idx * 0.05);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.05 + 0.2);
-                    osc.connect(gain);
-                    gain.connect(audioCtx.destination);
-                    osc.start(now + idx * 0.05);
-                    osc.stop(now + idx * 0.05 + 0.2);
-                });
-            } else if (type === 'drop') {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(300, now);
-                osc.frequency.exponentialRampToValueAtTime(150, now + 0.12);
-                gain.gain.setValueAtTime(0.4, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start(now);
-                osc.stop(now + 0.12);
-            } else if (type === 'hover') {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(600, now);
-                gain.gain.setValueAtTime(0.05, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start(now);
-                osc.stop(now + 0.03);
-            } else if (type === 'win') {
-                const notes = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99];
-                notes.forEach((freq, idx) => {
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(freq, now + idx * 0.08);
-                    gain.gain.setValueAtTime(0.2, now + idx * 0.08);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.3);
-                    osc.connect(gain);
-                    gain.connect(audioCtx.destination);
-                    osc.start(now + idx * 0.08);
-                    osc.stop(now + idx * 0.08 + 0.3);
-                });
-            }
-        }
-    </script>
-
-    <script>
-        // --- JÁTÉK ÁLLAPOT VÁLTOZÓK ---
-        let gameMode = 'menu'; // 'menu', 'challenge', 'practice'
-        let currentPracticeLevel = 1;
-        let challengeTasks = [];
-        let challengeIndex = 0;
-        
-        // Stopperóra
-        let timerInterval = null;
-        let startTime = 0;
-        let elapsedTime = 0;
-        let bestTime = localStorage.getItem('egermester_best_time') || null;
-
-        // Globális Helyi Menü letiltása a játéktérben
-        const gameArea = document.getElementById('game-area');
-        gameArea.addEventListener('contextmenu', (e) => {
+        case 2: // JOBB KLIKK (Varázsdoboz)
+          taskTitle.innerText = '🎁 Jobb Klikk: Nyisd ki a varázsdobozt!';
+          const box = document.createElement('div');
+          box.className = 'magic-box';
+          box.innerText = '🎁';
+          box.oncontextmenu = (e) => {
             e.preventDefault();
+            completeTask();
+          };
+          taskContent.appendChild(box);
+          break;
+
+        case 3: // DUPLA KLIKK (Tojás feltörése)
+          taskTitle.innerText = '🥚 Dupla Klikk: Törd fel a tojást (2 gyors kattintás)!';
+          const egg = document.createElement('div');
+          egg.className = 'egg';
+          egg.innerText = '🥚';
+          let clicks = 0;
+          egg.onclick = () => {
+            clicks++;
+            if (clicks === 1) {
+              egg.innerText = '🌩️'; // Megreped
+              setTimeout(() => { if(clicks < 2) { clicks = 0; egg.innerText = '🥚'; } }, 500);
+            }
+          };
+          egg.ondblclick = () => {
+            egg.innerText = '🐣';
+            setTimeout(() => completeTask(), 300);
+          };
+          taskContent.appendChild(egg);
+          break;
+
+        case 4: // DRAG AND DROP (Formák)
+          taskTitle.innerText = '⭐ Drag & Drop: Húzd a csillagot a helyére!';
+          const dragDiv = document.createElement('div');
+          dragDiv.className = 'drag-container';
+          dragDiv.innerHTML = `
+            <div class="draggable-item" id="dragStar" draggable="true" style="background:#ffcc00; color:#000;">⭐</div>
+            <div class="drop-bin" id="dropBin"><span>Húzd ide!</span><span>📥</span></div>
+          `;
+          taskContent.appendChild(dragDiv);
+
+          const item = document.getElementById('dragStar');
+          const bin = document.getElementById('dropBin');
+
+          item.ondragstart = (e) => e.dataTransfer.setData('text', 'star');
+          bin.ondragover = (e) => { e.preventDefault(); bin.classList.add('highlight'); };
+          bin.ondragleave = () => bin.classList.remove('highlight');
+          bin.ondrop = (e) => {
+            e.preventDefault();
+            bin.classList.remove('highlight');
+            bin.style.background = 'rgba(0,230,118,0.3)';
+            bin.innerHTML = '⭐';
+            setTimeout(() => completeTask(), 300);
+          };
+          break;
+
+        case 5: // PONTOK ÖSSZEKÖTÉSE (Canvas)
+          taskTitle.innerText = '🚀 Összekötés: Húzd a vonalat a Rakétától a Bolygóig!';
+          taskContent.innerHTML = `
+            <canvas id="connectCanvas" width="700" height="350"></canvas>
+            <div class="dot-node" id="startDot" style="left:15%; top:40%; background:#ff007f;">🚀</div>
+            <div class="dot-node" id="endDot" style="left:75%; top:40%; background:#00d2ff;">🪐</div>
+          `;
+          const canvas = document.getElementById('connectCanvas');
+          const ctx = canvas.getContext('2d');
+          let isDrawing = false;
+
+          const startDot = document.getElementById('startDot');
+          const endDot = document.getElementById('endDot');
+
+          startDot.onmousedown = () => { isDrawing = true; };
+          canvas.onmousemove = (e) => {
+            if (!isDrawing) return;
+            const rect = canvas.getBoundingClientRect();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.moveTo(canvas.width * 0.18, canvas.height * 0.5);
+            ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+            ctx.strokeStyle = '#00e676';
+            ctx.lineWidth = 6;
+            ctx.stroke();
+          };
+          endDot.onmouseenter = () => {
+            if (isDrawing) {
+              isDrawing = false;
+              completeTask();
+            }
+          };
+          window.onmouseup = () => { isDrawing = false; ctx.clearRect(0,0,canvas.width,canvas.height); };
+          break;
+
+        case 6: // GÖRGETÉS (Scroll)
+          taskTitle.innerText = '📜 Görgetés: Tekerd le az egérgörgőt a kincsig!';
+          const scrollZone = document.createElement('div');
+          scrollZone.className = 'scroll-zone';
+          scrollZone.innerHTML = `
+            <div class="scroll-content">
+              <div>⬇️ Tekerj lefelé! ⬇️</div>
+              <div style="font-size:3rem;" id="treasure">💎</div>
+            </div>
+          `;
+          taskContent.appendChild(scrollZone);
+          scrollZone.onscroll = () => {
+            if (scrollZone.scrollTop + scrollZone.clientHeight >= 550) {
+              completeTask();
+            }
+          };
+          break;
+
+        case 7: // CSÚSZKA (Slider)
+          taskTitle.innerText = '🎚️ Csúszka: Húzd a csúszkát a zöld mezőbe!';
+          const sliderDiv = document.createElement('div');
+          sliderDiv.className = 'slider-container';
+          sliderDiv.innerHTML = `
+            <div class="slider-target-bar">
+              <div class="slider-target-zone" style="left:60%; width:20%;"></div>
+            </div>
+            <input type="range" min="0" max="100" value="0" class="custom-slider" id="taskSlider">
+          `;
+          taskContent.appendChild(sliderDiv);
+          const slider = document.getElementById('taskSlider');
+          slider.oninput = () => {
+            if (slider.value >= 60 && slider.value <= 80) {
+              completeTask();
+            }
+          };
+          break;
+
+        case 8: // ÖSSZETETT MENÜ
+          taskTitle.innerText = '📁 Mappa Menü: Jobb klikk ➔ Új... ➔ Mappa!';
+          const area = document.createElement('div');
+          area.className = 'context-area';
+          area.innerText = 'Kattints ide a Jobb Egérgombbal!';
+          area.oncontextmenu = (e) => {
+            e.preventDefault();
+            customContextMenu.style.left = `${e.clientX}px`;
+            customContextMenu.style.top = `${e.clientY}px`;
+            customContextMenu.style.display = 'block';
+          };
+          taskContent.appendChild(area);
+          break;
+      }
+    }
+
+    function onFolderMenuClick() {
+      customContextMenu.style.display = 'none';
+      completeTask();
+    }
+
+    // A menü bezárása ha máshova kattint a gyerek
+    window.onclick = (e) => {
+      startTimer();
+      if (!e.target.closest('.custom-menu')) {
+        customContextMenu.style.display = 'none';
+      }
+    };
+
+    // --- KIHÍVÁS VÉGE ÉS RANGLISTA ---
+    function finishChallenge() {
+      stopTimer();
+      playSound('win');
+      gameActive = false;
+      const mins = Math.floor(secondsElapsed / 60).toString().padStart(2, '0');
+      const secs = (secondsElapsed % 60).toString().padStart(2, '0');
+      document.getElementById('finishSummary').innerText = `A 10 feladatot ${mins}:${secs} idő alatt teljesítetted, ${score} ponttal!`;
+      document.getElementById('finishModal').classList.add('active');
+    }
+
+    function saveScoreAndClose() {
+      const name = document.getElementById('playerNameInput').value.trim() || 'Kis Mester';
+      const lb = JSON.parse(localStorage.getItem('mouse_game_lb')) || [];
+      const mins = Math.floor(secondsElapsed / 60).toString().padStart(2, '0');
+      const secs = (secondsElapsed % 60).toString().padStart(2, '0');
+
+      lb.push({ name, score, timeStr: `${mins}:${secs}`, timeSec: secondsElapsed });
+      lb.sort((a, b) => b.score - a.score || a.timeSec - b.timeSec);
+      localStorage.setItem('mouse_game_lb', JSON.stringify(lb.slice(0, 10)));
+
+      document.getElementById('finishModal').classList.remove('active');
+      openLeaderboardModal();
+    }
+
+    function openLeaderboardModal() {
+      const lb = JSON.parse(localStorage.getItem('mouse_game_lb')) || [];
+      const container = document.getElementById('leaderboardContent');
+
+      if (lb.length === 0) {
+        container.innerHTML = '<p style="margin:20px 0; color:#888;">Még nincs elmentett eredmény!</p>';
+      } else {
+        let html = `
+          <table class="leaderboard-table">
+            <thead>
+              <tr><th>Hely</th><th>Név</th><th>Pont</th><th>Idő</th></tr>
+            </thead>
+            <tbody>
+        `;
+        lb.forEach((entry, idx) => {
+          html += `<tr><td>#${idx + 1}</td><td><strong>${entry.name}</strong></td><td style="color:var(--accent-yellow); font-weight:bold;">${entry.score}</td><td>${entry.timeStr}</td></tr>`;
         });
-
-        // Toast értesítő rendszer (alert() helyett)
-        function showToast(msg) {
-            const toast = document.getElementById('toast');
-            document.getElementById('toast-message').innerText = msg;
-            toast.classList.remove('opacity-0', 'translate-y-[-20px]', 'pointer-events-none');
-            setTimeout(() => {
-                toast.classList.add('opacity-0', 'translate-y-[-20px]', 'pointer-events-none');
-            }, 2500);
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            updateBestTimeDisplay();
-        });
-
-        function updateBestTimeDisplay() {
-            const bestDisplay = document.getElementById('menu-best-time');
-            if (bestTime) {
-                bestDisplay.innerText = formatTime(parseFloat(bestTime));
-            } else {
-                bestDisplay.innerText = '--:--.-';
-            }
-        }
-
-        function formatTime(seconds) {
-            const mins = Math.floor(seconds / 60);
-            const secs = Math.floor(seconds % 60);
-            const ms = Math.floor((seconds % 1) * 10);
-            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${ms}`;
-        }
-
-        function switchMode(mode) {
-            gameMode = mode;
-            stopTimer();
-
-            document.getElementById('screen-menu').classList.add('hidden');
-            document.getElementById('screen-game').classList.add('hidden');
-            document.getElementById('modal-victory').classList.add('hidden');
-
-            if (mode === 'menu') {
-                document.getElementById('screen-menu').classList.remove('hidden');
-                updateBestTimeDisplay();
-            } else if (mode === 'challenge' || mode === 'practice') {
-                document.getElementById('screen-game').classList.remove('hidden');
-            }
-        }
-
-        // --- STOPPERÓRA LOGIKA ---
-        function startTimer() {
-            stopTimer();
-            startTime = performance.now();
-            timerInterval = setInterval(() => {
-                elapsedTime = (performance.now() - startTime) / 1000;
-                document.getElementById('timer-display').innerText = formatTime(elapsedTime);
-            }, 50);
-        }
-
-        function stopTimer() {
-            if (timerInterval) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-            }
-        }
-
-        // --- JÁTÉKMÓD INDÍTÓK ---
-        function startChallengeMode() {
-            switchMode('challenge');
-            document.getElementById('game-mode-badge').innerText = '⚡ Kihívás Mód';
-            document.getElementById('game-mode-badge').className = 'bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold px-2.5 py-0.5 rounded-md';
-            document.getElementById('timer-container').classList.remove('hidden');
-
-            // 10 véletlenszerű feladat generálása (1..7 szintekből)
-            challengeTasks = [];
-            const taskTypes = [1, 2, 3, 4, 5, 6, 7];
-            for (let i = 0; i < 10; i++) {
-                const randomType = taskTypes[Math.floor(Math.random() * taskTypes.length)];
-                challengeTasks.push(randomType);
-            }
-            
-            challengeIndex = 0;
-            elapsedTime = 0;
-            startTimer();
-            loadTask(challengeTasks[challengeIndex]);
-        }
-
-        function startPracticeMode(level) {
-            switchMode('practice');
-            currentPracticeLevel = level;
-            document.getElementById('game-mode-badge').innerText = `🎯 Gyakorlás #${level}`;
-            document.getElementById('game-mode-badge').className = 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs font-bold px-2.5 py-0.5 rounded-md';
-            document.getElementById('timer-container').classList.add('hidden');
-            document.getElementById('task-counter').innerText = 'Gyakorló szint';
-
-            loadTask(level);
-        }
-
-        function restartCurrentTask() {
-            if (gameMode === 'challenge') {
-                loadTask(challengeTasks[challengeIndex]);
-            } else {
-                loadTask(currentPracticeLevel);
-            }
-        }
-
-        // --- FELADAT ROUTER ---
-        function loadTask(taskType) {
-            const arena = document.getElementById('arena-content');
-            arena.innerHTML = ''; // Előző elemek törlése
-
-            if (gameMode === 'challenge') {
-                document.getElementById('task-counter').innerText = `Feladat: ${challengeIndex + 1} / 10`;
-            }
-
-            switch (taskType) {
-                case 1:
-                    renderTaskLeftClick(arena);
-                    break;
-                case 2:
-                    renderTaskRightClick(arena);
-                    break;
-                case 3:
-                    renderTaskDragDrop(arena);
-                    break;
-                case 4:
-                    renderTaskContextMenu(arena);
-                    break;
-                case 5:
-                    renderTaskConnectPoints(arena);
-                    break;
-                case 6:
-                    renderTaskScrollWheel(arena);
-                    break;
-                case 7:
-                    renderTaskSliderDrag(arena);
-                    break;
-            }
-        }
-
-        function onTaskCompleted() {
-            playSound('pop');
-
-            if (gameMode === 'challenge') {
-                challengeIndex++;
-                if (challengeIndex >= challengeTasks.length) {
-                    stopTimer();
-                    showVictoryModal();
-                } else {
-                    loadTask(challengeTasks[challengeIndex]);
-                }
-            } else {
-                // Gyakorló módban csillag/visszajelzés
-                const arena = document.getElementById('arena-content');
-                arena.innerHTML = `
-                    <div class="text-center space-y-3 animate-bounce">
-                        <div class="text-6xl">🌟</div>
-                        <h3 class="text-2xl font-bold text-emerald-400">Szuper! Ügyes vagy!</h3>
-                        <button onclick="loadTask(currentPracticeLevel)" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-6 py-2.5 rounded-xl shadow-md transition-all">
-                            Újra Kipróbálom
-                        </button>
-                    </div>
-                `;
-                triggerConfetti();
-            }
-        }
-
-        // ==========================================
-        // FELADAT 1: BAL KLIKK (BUBORÉK)
-        // ==========================================
-        function renderTaskLeftClick(container) {
-            document.getElementById('instruction-icon').innerText = '🎈';
-            document.getElementById('instruction-text').innerText = 'Durrantsd ki a lufit BAL gombbal!';
-            document.getElementById('instruction-subtext').innerText = 'Kattints simán a bal egérgombbal a repülő lufira!';
-
-            const balloonColors = ['bg-pink-500', 'bg-purple-500', 'bg-blue-500', 'bg-emerald-500', 'bg-amber-500'];
-            const randomColor = balloonColors[Math.floor(Math.random() * balloonColors.length)];
-
-            const balloonWrapper = document.createElement('div');
-            balloonWrapper.className = 'float-bubble cursor-pointer flex flex-col items-center transition-transform hover:scale-110 active:scale-95';
-            
-            balloonWrapper.innerHTML = `
-                <div class="w-32 h-40 ${randomColor} rounded-[50%_50%_50%_50%/40%_40%_60%_60%] shadow-2xl flex items-center justify-center text-4xl relative border-2 border-white/20">
-                    🎈
-                    <div class="absolute w-4 h-8 bg-white/30 rounded-full top-4 left-6 -rotate-45"></div>
-                </div>
-                <div class="w-2 h-8 bg-slate-600"></div>
-                <div class="text-xs font-bold text-slate-300 bg-slate-800 px-3 py-1 rounded-md border border-slate-700 mt-1 shadow">
-                    BAL KLIKK! 👈
-                </div>
-            `;
-
-            balloonWrapper.addEventListener('click', (e) => {
-                if (e.button === 0) {
-                    onTaskCompleted();
-                }
-            });
-
-            container.appendChild(balloonWrapper);
-        }
-
-        // ==========================================
-        // FELADAT 2: JOBB KLIKK (AJÁNDÉK)
-        // ==========================================
-        function renderTaskRightClick(container) {
-            document.getElementById('instruction-icon').innerText = '🎁';
-            document.getElementById('instruction-text').innerText = 'Nyisd ki az ajándékot JOBB gombbal!';
-            document.getElementById('instruction-subtext').innerText = 'Használd a másodlagos (JOBB) egérgombot a dobozon!';
-
-            const giftWrapper = document.createElement('div');
-            giftWrapper.className = 'cursor-pointer flex flex-col items-center group transition-transform hover:scale-105';
-
-            giftWrapper.innerHTML = `
-                <div class="relative w-36 h-36 bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-600 rounded-3xl shadow-2xl flex items-center justify-center text-6xl border-4 border-indigo-400/40 group-hover:rotate-2 transition-transform">
-                    🎁
-                    <div class="absolute -top-3 bg-yellow-400 text-slate-950 text-xs font-black px-3 py-1 rounded-full shadow border border-yellow-200 uppercase tracking-wider pulse-slow">
-                        Nyomj JOBB klikket! 👉
-                    </div>
-                </div>
-                <div class="text-xs font-bold text-indigo-300 bg-indigo-950/80 border border-indigo-700 px-3.5 py-1.5 rounded-xl mt-4">
-                    🖱️ Egér JOBB gombja
-                </div>
-            `;
-
-            giftWrapper.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-                playSound('magic');
-                onTaskCompleted();
-            });
-
-            container.appendChild(giftWrapper);
-        }
-
-        // ==========================================
-        // FELADAT 3: DRAG & DROP (FORMÁK)
-        // ==========================================
-        function renderTaskDragDrop(container) {
-            document.getElementById('instruction-icon').innerText = '🖐️';
-            document.getElementById('instruction-text').innerText = 'Húzd az állatkát a kosárba!';
-            document.getElementById('instruction-subtext').innerText = 'Tartsd lenyomva a bal gombot, húzd a kosár fölé, majd engedd el!';
-
-            const animals = [
-                { emoji: '🐶', name: 'Kutyus' },
-                { emoji: '🐱', name: 'Cica' },
-                { emoji: '🐰', name: 'Nyuszi' },
-                { emoji: '🐼', name: 'Panda' }
-            ];
-            const selectedAnimal = animals[Math.floor(Math.random() * animals.length)];
-
-            container.className = "w-full h-full flex flex-col sm:flex-row items-center justify-around gap-6 relative min-h-[300px]";
-
-            container.innerHTML = `
-                <div id="drag-item" class="w-28 h-28 bg-amber-500/20 border-4 border-amber-400 rounded-3xl flex flex-col items-center justify-center cursor-grab active:cursor-grabbing shadow-xl transition-transform hover:scale-105 z-20 touch-none">
-                    <span class="text-5xl pointer-events-none">${selectedAnimal.emoji}</span>
-                    <span class="text-xs font-bold text-amber-300 pointer-events-none mt-1">${selectedAnimal.name}</span>
-                </div>
-
-                <div id="drop-target" class="w-36 h-36 bg-emerald-950/40 border-4 border-dashed border-emerald-400 rounded-3xl flex flex-col items-center justify-center text-emerald-300 shadow-inner transition-all">
-                    <span class="text-5xl pointer-events-none">🧺</span>
-                    <span class="text-xs font-bold pointer-events-none mt-1">Ide húzd!</span>
-                </div>
-            `;
-
-            const dragItem = document.getElementById('drag-item');
-            const dropTarget = document.getElementById('drop-target');
-
-            let isDragging = false;
-            let startX, startY, initialLeft, initialTop;
-
-            dragItem.addEventListener('pointerdown', (e) => {
-                isDragging = true;
-                dragItem.setPointerCapture(e.pointerId);
-                startX = e.clientX;
-                startY = e.clientY;
-
-                const rect = dragItem.getBoundingClientRect();
-                const containerRect = container.getBoundingClientRect();
-                
-                initialLeft = rect.left - containerRect.left;
-                initialTop = rect.top - containerRect.top;
-
-                dragItem.style.position = 'absolute';
-                dragItem.style.left = `${initialLeft}px`;
-                dragItem.style.top = `${initialTop}px`;
-                dragItem.classList.add('scale-110', 'shadow-2xl');
-            });
-
-            dragItem.addEventListener('pointermove', (e) => {
-                if (!isDragging) return;
-                const dx = e.clientX - startX;
-                const dy = e.clientY - startY;
-
-                dragItem.style.left = `${initialLeft + dx}px`;
-                dragItem.style.top = `${initialTop + dy}px`;
-
-                const itemRect = dragItem.getBoundingClientRect();
-                const targetRect = dropTarget.getBoundingClientRect();
-
-                const isOverlapping = !(itemRect.right < targetRect.left || 
-                                        itemRect.left > targetRect.right || 
-                                        itemRect.bottom < targetRect.top || 
-                                        itemRect.top > targetRect.bottom);
-
-                if (isOverlapping) {
-                    dropTarget.classList.add('bg-emerald-500/40', 'scale-105');
-                } else {
-                    dropTarget.classList.remove('bg-emerald-500/40', 'scale-105');
-                }
-            });
-
-            dragItem.addEventListener('pointerup', (e) => {
-                if (!isDragging) return;
-                isDragging = false;
-
-                const itemRect = dragItem.getBoundingClientRect();
-                const targetRect = dropTarget.getBoundingClientRect();
-
-                const isOverlapping = !(itemRect.right < targetRect.left || 
-                                        itemRect.left > targetRect.right || 
-                                        itemRect.bottom < targetRect.top || 
-                                        itemRect.top > targetRect.bottom);
-
-                if (isOverlapping) {
-                    playSound('drop');
-                    onTaskCompleted();
-                } else {
-                    dragItem.style.position = 'relative';
-                    dragItem.style.left = 'auto';
-                    dragItem.style.top = 'auto';
-                    dragItem.classList.remove('scale-110', 'shadow-2xl');
-                    dropTarget.classList.remove('bg-emerald-500/40', 'scale-105');
-                }
-            });
-        }
-
-        // ==========================================
-        // FELADAT 4: HELYI MENÜ NAVIGÁCIÓ
-        // ==========================================
-        function renderTaskContextMenu(container) {
-            document.getElementById('instruction-icon').innerText = '📁';
-            document.getElementById('instruction-text').innerText = 'Hozz létre egy új mappát!';
-            document.getElementById('instruction-subtext').innerText = '1. Nyomj JOBB klikket -> 2. Vidd a kurzort az "Új... 👉" menüre -> 3. Kattints a "Mappa 📁" szóra!';
-
-            container.className = "w-full h-full relative bg-slate-900/90 rounded-2xl border-2 border-slate-700 flex flex-col items-center justify-center p-4 min-h-[300px]";
-
-            container.innerHTML = `
-                <div class="text-center text-slate-400 font-bold text-sm pointer-events-none space-y-2">
-                    <div class="text-5xl opacity-50">💻</div>
-                    <p>Kattints JOBB egérgombbal bárhová ezen a sötét területen!</p>
-                </div>
-
-                <div id="custom-menu" class="hidden absolute bg-slate-800/95 backdrop-blur-md rounded-2xl shadow-2xl border-2 border-slate-700 py-2 w-52 z-30 font-semibold text-slate-200 text-sm">
-                    <div class="px-3 py-1.5 hover:bg-slate-700 flex justify-between items-center cursor-pointer rounded-lg mx-1">
-                        <span>👁️ Nézet</span>
-                    </div>
-                    
-                    <div id="menu-new-trigger" class="px-3 py-2 hover:bg-indigo-600/30 text-amber-300 flex justify-between items-center cursor-pointer rounded-lg mx-1 bg-amber-500/10 border border-amber-500/30 font-bold transition-all">
-                        <span>✨ Új...</span>
-                        <span class="text-xs">👉</span>
-                    </div>
-
-                    <div class="px-3 py-1.5 hover:bg-slate-700 flex justify-between items-center cursor-pointer rounded-lg mx-1">
-                        <span>📋 Beillesztés</span>
-                    </div>
-
-                    <div id="custom-submenu" class="hidden absolute left-full top-10 ml-1 bg-slate-800/95 backdrop-blur-md rounded-2xl shadow-2xl border-2 border-indigo-500/40 py-2 w-48 z-40 font-semibold text-slate-200 text-sm">
-                        <div id="menu-folder-btn" class="px-3 py-2 bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-300 font-bold flex items-center space-x-2 cursor-pointer rounded-lg mx-1 border border-emerald-500/30 transition-all">
-                            <span>📁</span>
-                            <span>Mappa</span>
-                        </div>
-                        <div class="px-3 py-1.5 hover:bg-slate-700 flex items-center space-x-2 cursor-pointer rounded-lg mx-1 text-slate-500">
-                            <span>📄</span>
-                            <span>Dokumentum</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            const customMenu = document.getElementById('custom-menu');
-            const customSubmenu = document.getElementById('custom-submenu');
-            const newTrigger = document.getElementById('menu-new-trigger');
-            const folderBtn = document.getElementById('menu-folder-btn');
-
-            container.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-                playSound('hover');
-
-                const rect = container.getBoundingClientRect();
-                let x = e.clientX - rect.left;
-                let y = e.clientY - rect.top;
-
-                if (x + 220 > rect.width) x = rect.width - 230;
-                if (y + 180 > rect.height) y = rect.height - 190;
-
-                customMenu.style.left = `${x}px`;
-                customMenu.style.top = `${y}px`;
-                customMenu.classList.remove('hidden');
-                customSubmenu.classList.add('hidden');
-            });
-
-            newTrigger.addEventListener('mouseenter', () => {
-                playSound('hover');
-                customSubmenu.classList.remove('hidden');
-            });
-
-            folderBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                
-                customMenu.classList.add('hidden');
-                container.innerHTML += `
-                    <div class="absolute inset-0 flex items-center justify-center bg-slate-950/80 rounded-2xl z-50">
-                        <div class="text-center animate-bounce">
-                            <div class="text-7xl">📁</div>
-                            <div class="text-xl font-bold text-emerald-400 mt-2">Új Mappa Létrehozva!</div>
-                        </div>
-                    </div>
-                `;
-
-                setTimeout(() => {
-                    onTaskCompleted();
-                }, 800);
-            });
-        }
-
-        // ==========================================
-        // FELADAT 5: PONTOK ÖSSZEKÖTÉSE (ÚJ)
-        // ==========================================
-        function renderTaskConnectPoints(container) {
-            document.getElementById('instruction-icon').innerText = '🚀';
-            document.getElementById('instruction-text').innerText = 'Kösd össze a Rakétát a Bolygóval!';
-            document.getElementById('instruction-subtext').innerText = 'Nyomd le a gombot a Rakétán, húzd át a vonalat a Bolygóig, majd engedd el!';
-
-            container.className = "w-full h-full relative bg-slate-950 rounded-2xl overflow-hidden min-h-[350px]";
-
-            container.innerHTML = `
-                <svg id="line-canvas" class="absolute inset-0 w-full h-full pointer-events-none z-10">
-                    <line id="draw-line" x1="0" y1="0" x2="0" y2="0" stroke="#818cf8" stroke-width="6" stroke-dasharray="8 8" stroke-linecap="round" />
-                </svg>
-
-                <div id="start-node" class="absolute z-20 w-16 h-16 bg-indigo-600 border-4 border-indigo-300 rounded-full flex items-center justify-center text-3xl shadow-xl cursor-grab active:cursor-grabbing hover:scale-110 transition-transform glow-effect">
-                    🚀
-                </div>
-
-                <div id="target-node" class="absolute z-20 w-20 h-20 bg-emerald-600/30 border-4 border-emerald-400 rounded-full flex items-center justify-center text-4xl shadow-2xl glow-target">
-                    🪐
-                </div>
-            `;
-
-            const startNode = document.getElementById('start-node');
-            const targetNode = document.getElementById('target-node');
-            const drawLine = document.getElementById('draw-line');
-            const svgCanvas = document.getElementById('line-canvas');
-
-            // Pozíciók véletlenszerű beállítása a tartományon belül
-            const containerRect = container.getBoundingClientRect();
-            
-            const startX = 60;
-            const startY = Math.floor(Math.random() * (containerRect.height - 120)) + 60;
-            
-            const targetX = containerRect.width - 100;
-            const targetY = Math.floor(Math.random() * (containerRect.height - 120)) + 60;
-
-            startNode.style.left = `${startX}px`;
-            startNode.style.top = `${startY}px`;
-
-            targetNode.style.left = `${targetX}px`;
-            targetNode.style.top = `${targetY}px`;
-
-            let isConnecting = false;
-
-            startNode.addEventListener('pointerdown', (e) => {
-                isConnecting = true;
-                startNode.setPointerCapture(e.pointerId);
-
-                const sRect = startNode.getBoundingClientRect();
-                const cRect = container.getBoundingClientRect();
-
-                const x1 = sRect.left + sRect.width / 2 - cRect.left;
-                const y1 = sRect.top + sRect.height / 2 - cRect.top;
-
-                drawLine.setAttribute('x1', x1);
-                drawLine.setAttribute('y1', y1);
-                drawLine.setAttribute('x2', x1);
-                drawLine.setAttribute('y2', y1);
-                drawLine.style.display = 'block';
-            });
-
-            startNode.addEventListener('pointermove', (e) => {
-                if (!isConnecting) return;
-
-                const cRect = container.getBoundingClientRect();
-                const mouseX = e.clientX - cRect.left;
-                const mouseY = e.clientY - cRect.top;
-
-                drawLine.setAttribute('x2', mouseX);
-                drawLine.setAttribute('y2', mouseY);
-
-                // Célpont érintésének vizsgálata
-                const tRect = targetNode.getBoundingClientRect();
-                const isOverTarget = (
-                    e.clientX >= tRect.left &&
-                    e.clientX <= tRect.right &&
-                    e.clientY >= tRect.top &&
-                    e.clientY <= tRect.bottom
-                );
-
-                if (isOverTarget) {
-                    targetNode.classList.add('scale-125', 'bg-emerald-500');
-                } else {
-                    targetNode.classList.remove('scale-125', 'bg-emerald-500');
-                }
-            });
-
-            startNode.addEventListener('pointerup', (e) => {
-                if (!isConnecting) return;
-                isConnecting = false;
-
-                const tRect = targetNode.getBoundingClientRect();
-                const isOverTarget = (
-                    e.clientX >= tRect.left &&
-                    e.clientX <= tRect.right &&
-                    e.clientY >= tRect.top &&
-                    e.clientY <= tRect.bottom
-                );
-
-                if (isOverTarget) {
-                    playSound('win');
-                    onTaskCompleted();
-                } else {
-                    drawLine.style.display = 'none';
-                    targetNode.classList.remove('scale-125', 'bg-emerald-500');
-                }
-            });
-        }
-
-        // ==========================================
-        // FELADAT 6: EGÉRGÖRGŐZÉS (ÚJ)
-        // ==========================================
-        function renderTaskScrollWheel(container) {
-            document.getElementById('instruction-icon').innerText = '📜';
-            document.getElementById('instruction-text').innerText = 'Gördíts lefele a kincsig az egérgörgővel!';
-            document.getElementById('instruction-subtext').innerText = 'Vidd a kurzort a doboz fölé és használd a középső egérgörgőt!';
-
-            container.className = "w-full h-full flex flex-col items-center justify-center p-2 min-h-[350px]";
-
-            container.innerHTML = `
-                <div id="scroll-box" class="custom-scroll-box w-full max-w-md h-72 bg-slate-900 border-4 border-cyan-500/40 rounded-3xl overflow-y-auto p-4 text-center space-y-24 shadow-2xl relative">
-                    <div class="bg-cyan-950/60 border border-cyan-500/30 p-3 rounded-2xl text-cyan-300 font-bold text-sm">
-                        👇 Kezdj el LEFELÉ gördíteni az egérgörgővel!
-                    </div>
-
-                    <div class="text-4xl animate-bounce">🌊</div>
-                    <div class="text-4xl animate-bounce">🐠</div>
-                    <div class="text-4xl animate-bounce">⚓</div>
-
-                    <!-- Kincs a doboz alján -->
-                    <div id="treasure-target" class="bg-gradient-to-tr from-amber-500 to-yellow-400 text-slate-950 p-6 rounded-3xl font-black text-2xl shadow-2xl flex flex-col items-center justify-center space-y-2 cursor-pointer border-4 border-yellow-200">
-                        <span>💎 KINCS MEGTALÁLVA! 💎</span>
-                        <span class="text-xs bg-black/20 px-3 py-1 rounded-full">Gördítés teljesítve!</span>
-                    </div>
-                </div>
-            `;
-
-            const scrollBox = document.getElementById('scroll-box');
-            
-            // Megakadályozzuk a böngésző saját oldalgördítését
-            scrollBox.addEventListener('wheel', (e) => {
-                e.preventDefault();
-                scrollBox.scrollTop += e.deltaY;
-
-                // Ellenőrizzük, elértük-e az alját
-                const maxScroll = scrollBox.scrollHeight - scrollBox.clientHeight;
-                if (scrollBox.scrollTop >= maxScroll - 10) {
-                    playSound('magic');
-                    onTaskCompleted();
-                }
-            }, { passive: false });
-        }
-
-        // ==========================================
-        // FELADAT 7: CSÚSZKA HÚZÁSA (ÚJ)
-        // ==========================================
-        function renderTaskSliderDrag(container) {
-            document.getElementById('instruction-icon').innerText = '🎚️';
-            document.getElementById('instruction-text').innerText = 'Húzd a csúszkát a zöld célzónába!';
-            document.getElementById('instruction-subtext').innerText = 'Tartsd lenyomva a csúszka gombját, igazítsd a zölden világító mezőbe, majd engedd el!';
-
-            container.className = "w-full h-full flex flex-col items-center justify-center p-6 min-h-[350px]";
-
-            container.innerHTML = `
-                <div class="w-full max-w-lg bg-slate-900 border-2 border-slate-700 rounded-3xl p-8 space-y-8 shadow-2xl relative">
-                    
-                    <div class="text-center">
-                        <div class="text-sm font-bold text-slate-300">Gördítősáv Pozícionáló</div>
-                        <div id="slider-feedback" class="text-xs font-semibold text-amber-400 mt-1">Húzd a gombot a zöld keretbe!</div>
-                    </div>
-
-                    <!-- Slider Pálya -->
-                    <div id="slider-track" class="relative w-full h-12 bg-slate-950 rounded-full border-2 border-slate-800 flex items-center px-1 shadow-inner">
-                        
-                        <!-- Zöld Célzóna -->
-                        <div id="target-zone" class="absolute h-10 bg-emerald-500/30 border-2 border-emerald-400 rounded-2xl glow-target flex items-center justify-center text-[10px] font-black text-emerald-300">
-                            CÉL 🎯
-                        </div>
-
-                        <!-- Húzható Gomb -->
-                        <div id="slider-thumb" class="absolute w-12 h-12 bg-gradient-to-tr from-amber-400 to-yellow-300 rounded-full border-2 border-white shadow-xl cursor-grab active:cursor-grabbing flex items-center justify-center text-xl z-20 hover:scale-110 transition-transform">
-                            🎚️
-                        </div>
-
-                    </div>
-
-                </div>
-            `;
-
-            const track = document.getElementById('slider-track');
-            const thumb = document.getElementById('slider-thumb');
-            const targetZone = document.getElementById('target-zone');
-            const feedback = document.getElementById('slider-feedback');
-
-            const trackRect = track.getBoundingClientRect();
-            
-            // Random célzóna generálás (track szélességének 50-80%-ánál)
-            const zoneWidth = 80;
-            const minX = 120;
-            const maxX = trackRect.width - zoneWidth - 20;
-            const zoneLeft = Math.floor(Math.random() * (maxX - minX)) + minX;
-
-            targetZone.style.left = `${zoneLeft}px`;
-            targetZone.style.width = `${zoneWidth}px`;
-
-            thumb.style.left = `5px`;
-
-            let isDragging = false;
-            let startMouseX = 0;
-            let initialThumbLeft = 5;
-
-            thumb.addEventListener('pointerdown', (e) => {
-                isDragging = true;
-                thumb.setPointerCapture(e.pointerId);
-                startMouseX = e.clientX;
-                initialThumbLeft = parseFloat(thumb.style.left) || 5;
-            });
-
-            thumb.addEventListener('pointermove', (e) => {
-                if (!isDragging) return;
-
-                const dx = e.clientX - startMouseX;
-                let newLeft = initialThumbLeft + dx;
-
-                // Határok között tartás
-                if (newLeft < 2) newLeft = 2;
-                if (newLeft > trackRect.width - 50) newLeft = trackRect.width - 50;
-
-                thumb.style.left = `${newLeft}px`;
-
-                // Célzóna ellenőrzése
-                const thumbCenter = newLeft + 24;
-                const inZone = (thumbCenter >= zoneLeft && thumbCenter <= zoneLeft + zoneWidth);
-
-                if (inZone) {
-                    feedback.innerText = '🎯 BENNE VAGY! Engedd el a gombot!';
-                    feedback.className = 'text-xs font-bold text-emerald-400 mt-1 animate-pulse';
-                } else {
-                    feedback.innerText = 'Húzd a gombot a zöld keretbe!';
-                    feedback.className = 'text-xs font-semibold text-amber-400 mt-1';
-                }
-            });
-
-            thumb.addEventListener('pointerup', (e) => {
-                if (!isDragging) return;
-                isDragging = false;
-
-                const currentLeft = parseFloat(thumb.style.left) || 5;
-                const thumbCenter = currentLeft + 24;
-                const inZone = (thumbCenter >= zoneLeft && thumbCenter <= zoneLeft + zoneWidth);
-
-                if (inZone) {
-                    playSound('win');
-                    onTaskCompleted();
-                } else {
-                    playSound('hover');
-                }
-            });
-        }
-
-        // ==========================================
-        // GYŐZELEM & KONFETTI & RANGLISTÁK
-        // ==========================================
-        function showVictoryModal() {
-            playSound('win');
-            triggerConfetti();
-
-            const victoryTimeDisplay = document.getElementById('victory-time');
-            const recordBadge = document.getElementById('new-record-badge');
-            
-            victoryTimeDisplay.innerText = formatTime(elapsedTime);
-
-            if (!bestTime || elapsedTime < parseFloat(bestTime)) {
-                bestTime = elapsedTime;
-                localStorage.setItem('egermester_best_time', bestTime);
-                recordBadge.classList.remove('hidden');
-            } else {
-                recordBadge.classList.add('hidden');
-            }
-
-            document.getElementById('modal-victory').classList.remove('hidden');
-        }
-
-        function saveAndRestartChallenge() {
-            saveScoreToLeaderboard();
-            startChallengeMode();
-        }
-
-        function saveAndGoMenu() {
-            saveScoreToLeaderboard();
-            switchMode('menu');
-        }
-
-        function saveScoreToLeaderboard() {
-            const nameInput = document.getElementById('player-name-input').value.trim() || 'Kis Mester';
-            const records = JSON.parse(localStorage.getItem('egermester_leaderboard') || '[]');
-            
-            records.push({
-                name: nameInput,
-                time: elapsedTime,
-                date: new Date().toLocaleDateString('hu-HU')
-            });
-
-            records.sort((a, b) => a.time - b.time);
-            localStorage.setItem('egermester_leaderboard', JSON.stringify(records.slice(0, 10)));
-        }
-
-        function openLeaderboard() {
-            const list = document.getElementById('leaderboard-list');
-            const records = JSON.parse(localStorage.getItem('egermester_leaderboard') || '[]');
-            
-            list.innerHTML = '';
-            if (records.length === 0) {
-                list.innerHTML = '<div class="text-slate-500 text-center py-4 text-sm">Még nincsenek elmentett rekordok.</div>';
-            } else {
-                records.forEach((r, idx) => {
-                    list.innerHTML += `
-                        <div class="flex justify-between items-center bg-slate-950 p-3 rounded-xl border border-slate-800 text-sm">
-                            <div class="flex items-center space-x-3">
-                                <span class="font-bold text-amber-400">#${idx + 1}</span>
-                                <span class="font-bold text-white">${r.name}</span>
-                            </div>
-                            <div class="font-mono text-indigo-400 font-bold">${formatTime(r.time)}</div>
-                        </div>
-                    `;
-                });
-            }
-
-            document.getElementById('modal-leaderboard').classList.remove('hidden');
-        }
-
-        function closeLeaderboard() {
-            document.getElementById('modal-leaderboard').classList.add('hidden');
-        }
-
-        function triggerConfetti() {
-            const canvas = document.getElementById('confetti-canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-
-            const particles = [];
-            const colors = ['#f43f5e', '#8b5cf6', '#3b82f6', '#10b981', '#f59e0b'];
-
-            for (let i = 0; i < 90; i++) {
-                particles.push({
-                    x: canvas.width / 2,
-                    y: canvas.height / 2,
-                    vx: (Math.random() - 0.5) * 12,
-                    vy: (Math.random() - 0.7) * 12,
-                    size: Math.random() * 8 + 4,
-                    color: colors[Math.floor(Math.random() * colors.length)],
-                    life: 100
-                });
-            }
-
-            function animateConfetti() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                let active = false;
-
-                particles.forEach(p => {
-                    if (p.life > 0) {
-                        active = true;
-                        p.x += p.vx;
-                        p.y += p.vy;
-                        p.vy += 0.2;
-                        p.life -= 1.5;
-
-                        ctx.fillStyle = p.color;
-                        ctx.beginPath();
-                        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                        ctx.fill();
-                    }
-                });
-
-                if (active) {
-                    requestAnimationFrame(animateConfetti);
-                } else {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                }
-            }
-
-            animateConfetti();
-        }
-
-        function shareLink() {
-            const link = window.location.href;
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(link);
-                showToast('Játék hivatkozása a vágólapra másolva! 🔗');
-            } else {
-                showToast('Másold ki a címsorból a hivatkozást!');
-            }
-        }
-    </script>
+        html += '</tbody></table>';
+        container.innerHTML = html;
+      }
+      document.getElementById('leaderboardModal').classList.add('active');
+    }
+
+    function closeLeaderboardModal() {
+      document.getElementById('leaderboardModal').classList.remove('active');
+    }
+
+    // Indítás
+    resetGame();
+  </script>
 </body>
 </html>
