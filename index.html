@@ -53,7 +53,6 @@
       font-size: 0.95rem;
     }
 
-    /* Vezérlő gombok */
     .controls-container {
       display: flex;
       flex-direction: column;
@@ -120,7 +119,6 @@
       background: #30475e;
     }
 
-    /* Statisztikai sáv */
     .stats-bar {
       display: flex;
       gap: 18px;
@@ -153,7 +151,6 @@
       color: var(--accent-yellow);
     }
 
-    /* Játéktér kártya */
     .game-card {
       background: rgba(22, 33, 62, 0.9);
       border: 3px solid #30475e;
@@ -184,8 +181,6 @@
       z-index: 10;
       text-align: center;
     }
-
-    /* --- FELADAT SPECIÁLIS ELEMEK --- */
 
     /* 1. Buborékok (Bal klikk) */
     .bubble {
@@ -302,23 +297,40 @@
 
     /* 6. Görgetés (Scroll) */
     .scroll-zone {
-      width: 260px;
-      height: 200px;
+      width: 280px;
+      height: 220px;
       background: #111b2e;
       border: 3px solid var(--blue);
-      border-radius: 16px;
+      border-radius: 18px;
       overflow-y: scroll;
       padding: 15px;
       text-align: center;
       box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
+      scrollbar-width: thin;
+      scrollbar-color: var(--blue) #111b2e;
     }
 
     .scroll-content {
-      height: 600px;
+      height: 650px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       align-items: center;
+      padding: 10px 0;
+    }
+
+    .treasure-box-card {
+      background: rgba(249, 211, 66, 0.15);
+      border: 3px dashed var(--accent-yellow);
+      border-radius: 18px;
+      padding: 15px;
+      width: 85%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.3s ease;
     }
 
     /* 7. Csúszka (Slider) */
@@ -632,7 +644,6 @@
       }
     }
 
-    // --- JÁTÉK ÁLLAPOTOK ---
     let gameMode = 'challenge'; // 'challenge' vagy 'practice'
     let currentTaskType = 1;
     let challengeStep = 1;
@@ -735,7 +746,6 @@
       }
     }
 
-    // --- FELADAT GENERÁTOROK ---
     function loadTask(type) {
       customContextMenu.style.display = 'none';
       taskContent.innerHTML = '';
@@ -765,7 +775,7 @@
           break;
 
         case 3: // DUPLA KLIKK (Tojás feltörése)
-          taskTitle.innerText = '🥚 Dupla Klikk: Törd fel a tojást (2 gyors kattintás)!';
+          taskTitle.innerText = '🥚 Dupla Klikk: Törd felt a tojást (2 gyors kattintás)!';
           const egg = document.createElement('div');
           egg.className = 'egg';
           egg.innerText = '🥚';
@@ -844,20 +854,70 @@
           window.onmouseup = () => { isDrawing = false; ctx.clearRect(0,0,canvas.width,canvas.height); };
           break;
 
-        case 6: // GÖRGETÉS (Scroll)
-          taskTitle.innerText = '📜 Görgetés: Tekerd le az egérgörgőt a kincsig!';
-          const scrollZone = document.createElement('div');
-          scrollZone.className = 'scroll-zone';
-          scrollZone.innerHTML = `
-            <div class="scroll-content">
-              <div>⬇️ Tekerj lefelé! ⬇️</div>
-              <div style="font-size:3rem;" id="treasure">💎</div>
+        case 6: // GÖRGETÉS (Scroll + Kincsesláda)
+          taskTitle.innerText = '📜 Görgetés: Tekerd le az egérgörgőt a kincsesládáig!';
+          
+          const scrollWrapper = document.createElement('div');
+          scrollWrapper.style.cssText = 'display:flex; flex-direction:column; align-items:center; gap:8px; width:100%; height:100%; justify-content:center;';
+          
+          scrollWrapper.innerHTML = `
+            <div id="scrollBadge" style="background:#1e293b; color:#00d2ff; font-weight:bold; padding:5px 16px; border-radius:12px; font-size:0.88rem; border:1px solid #00d2ff;">
+              👇 Tekerj lefelé az egérgörgővel! (0%)
+            </div>
+            <div class="scroll-zone" id="scrollZone">
+              <div class="scroll-content">
+                <div style="font-size:1.05rem; font-weight:bold; color:#f9d342;">👇 Indulj el lefelé!</div>
+                <div style="font-size:2.4rem;">🌊</div>
+                <div style="font-size:2.4rem;">🐠</div>
+                <div style="font-size:2.4rem;">⚓</div>
+                
+                <div class="treasure-box-card" id="treasureCard">
+                  <div id="chestIcon" style="font-size:3.8rem; filter:drop-shadow(0 0 10px rgba(249,211,66,0.6));">🏴‍☠️</div>
+                  <div id="chestText" style="font-size:1.05rem; font-weight:bold; color:#f9d342;">Zárt Kincsesláda</div>
+                  <div style="font-size:0.75rem; color:#aaa;">Gördíts az aljára a nyitáshoz!</div>
+                </div>
+              </div>
             </div>
           `;
-          taskContent.appendChild(scrollZone);
+          taskContent.appendChild(scrollWrapper);
+
+          const scrollZone = document.getElementById('scrollZone');
+          const scrollBadge = document.getElementById('scrollBadge');
+          const chestIcon = document.getElementById('chestIcon');
+          const chestText = document.getElementById('chestText');
+          const treasureCard = document.getElementById('treasureCard');
+          let scrollFinished = false;
+
           scrollZone.onscroll = () => {
-            if (scrollZone.scrollTop + scrollZone.clientHeight >= 550) {
-              completeTask();
+            if (scrollFinished) return;
+            const maxScroll = scrollZone.scrollHeight - scrollZone.clientHeight;
+            const currentScroll = scrollZone.scrollTop;
+            const percent = Math.min(100, Math.round((currentScroll / maxScroll) * 100));
+
+            if (percent < 35) {
+              scrollBadge.innerText = `👇 Tekerj lefelé! (${percent}%)`;
+            } else if (percent < 80) {
+              scrollBadge.innerText = `🌊 Még egy kicsit! (${percent}%)`;
+            } else if (percent < 98) {
+              scrollBadge.innerText = `⚓ Ott a kincs! Tekerj az aljára! (${percent}%)`;
+            } else {
+              scrollFinished = true;
+              scrollBadge.innerText = '🎉 Megtaláltad a kincset!';
+              scrollBadge.style.background = '#00e676';
+              scrollBadge.style.color = '#000';
+              
+              // Látványos kincsesláda kinyitás
+              chestIcon.innerText = '🔓 💎 👑 🪙';
+              chestIcon.style.transform = 'scale(1.15)';
+              chestText.innerText = '✨ KINCS KINYITVA! ✨';
+              chestText.style.color = '#00e676';
+              treasureCard.style.background = 'rgba(0, 230, 118, 0.3)';
+              treasureCard.style.borderColor = '#00e676';
+
+              playSound('win');
+              setTimeout(() => {
+                completeTask();
+              }, 1100);
             }
           };
           break;
